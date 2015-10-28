@@ -1,0 +1,13 @@
+bin
+gen
+.gradle
+build
+.settings
+target
+*.iml
+.idea
+*.apk
+.idea
+/manifest-merger-release-report.txt
+gradlew
+gradlew.bat

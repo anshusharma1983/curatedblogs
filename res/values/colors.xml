@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="white">#ffffffff</color>
+    <color name="black">#ff000000</color>
+    <color name="gray">#bebebe</color>
+    <color name="darkGray">#767676</color>
+    <color name="gray_C0">#C0C0C0</color>
+    <color name="white_55">#55FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="green">#ff2dc24a</color>
+    <color name="green_disable">#ff1b762d</color>
+    <color name="red">#ffe1232f</color>
+    <color name="red_disable">#ff80140c</color>
+    <color name="yellow">#ffe1c60b</color>
+    <color name="customGray">#ffa0a496</color>
+    <color name="orange">#FF9900</color>
+    <color name="green_i">#009900</color>
+    <color name="blue">#000099</color>
+    <color name="backGroundRed">#fff9ffcd</color>
+    <color name="image_background">#ffa7ffee</color>
+    <color name="image_Pressed">#ff21fffa</color>
+    <color name="second_grey">#ff999999</color>
+    <color name="card_white">#ffffffff</color>
+    <color name="card_shadow">#8c666666</color>
+
+    <color name="green_029f53">#029f53</color>
+
+</resources>
