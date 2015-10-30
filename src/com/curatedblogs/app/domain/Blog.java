@@ -13,6 +13,15 @@ public class Blog extends ParseObject {
     private String url;
     private String fileURL;
     private String source;
+    private Boolean deleted;
+
+    public Boolean getDeleted() {
+        return getBoolean("deleted");
+    }
+
+    public void setDeleted(Boolean deleted) {
+        put("deleted", deleted);
+    }
 
     public String getAuthor() {
         return getString("author");

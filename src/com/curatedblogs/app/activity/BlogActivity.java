@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.util.LruCache;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
@@ -27,6 +28,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
+import bolts.Task;
+
 /**
  * Created by Anshu on 28/10/15.
  */
@@ -39,6 +42,9 @@ public class BlogActivity extends BaseActivity{
     List<Blog> blogs;
     int currentBlog = 0;
     private SwipeDetector sd;
+    private LruCache<String, Bitmap> mMemoryCache;
+    boolean loading = false;
+
 //    SwipeDetector sd;
 
     @Override
@@ -51,24 +57,35 @@ public class BlogActivity extends BaseActivity{
         this.articleView = (TextView) findViewById(R.id.article);
         ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
         parseQuery.orderByDescending("createdAt");
+        parseQuery.whereEqualTo("deleted", false);
+        initializeCache();
         runParseQuery(parseQuery, new IParseQueryRunner<Blog>() {
             @Override
             public void onComplete(final List<Blog> result) {
-//                for (Blog blog : result) {
-//                    System.out.println("title:" + blog.getTitle());
-//                }
+                for (Blog blog : result) {
+//                    new BitMapTask(blog.getFileURL(), false).execute(blog.getFileURL());
+                }
                 blogs = result;
                 final Blog blog = result.get(0);
                 showBlog(blog);
+                if (currentBlog < blogs.size() - 1) {
+                    new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
+                }
             }
         });
 
         sd = new SwipeDetector(this, new SwipeDetector.OnSwipeListener() {
             @Override
             public void onSwipeUp(float distance, float velocity) {
+                if (loading) {
+                    return;
+                }
                 System.out.println("Swipe up");
                 if (currentBlog < blogs.size() - 1) {
                     showBlog(blogs.get(++currentBlog));
+                    if (currentBlog < blogs.size() - 1) {
+                        new BitMapTask(blogs.get(currentBlog+1).getFileURL(), false).execute(blogs.get(currentBlog+1).getFileURL());
+                    }
                 }else {
                     showToast("No more articles to show");
                 }
@@ -76,6 +93,9 @@ public class BlogActivity extends BaseActivity{
 
             @Override
             public void onSwipeDown(float distance, float velocity) {
+                if (loading) {
+                    return;
+                }
                 System.out.println("SwipeDown");
                 if (currentBlog > 0) {
                     showBlog(blogs.get(--currentBlog));
@@ -96,6 +116,8 @@ public class BlogActivity extends BaseActivity{
         });
     }
 
+
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         return sd.onTouch(null, event);
@@ -105,27 +127,42 @@ public class BlogActivity extends BaseActivity{
         titleView.setText(blog.getTitle());
         titleView.setTextAppearance(this, android.R.style.TextAppearance_Large);
         articleView.setText(Html.fromHtml(Html.fromHtml(blog.getUrl()).toString()));
-        imageView.setVisibility(View.GONE);
-        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-        new BitMapTask().execute(blog.getFileURL());
+//        imageView.setVisibility(View.GONE);
+        loading = true;
+//        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+        imageView.setImageResource(R.drawable.blog);
+        new BitMapTask(blog.getFileURL(), true).execute(blog.getFileURL());
     }
 
-
     class BitMapTask extends AsyncTask<String, Void, Bitmap> {
+        String url;
+        Boolean render;
+
+        BitMapTask(String url, Boolean render) {
+            this.url = url;
+            this.render = render;
+        }
 
         private Exception exception;
 
-        protected Bitmap doInBackground(String... srcs) {
+        protected Bitmap doInBackground(String... params) {
             try {
-                Log.e("src",srcs[0]);
-                URL url = new URL(srcs[0]);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                Bitmap bitmap = getBitmapFromMemCache(url);
+                if (bitmap != null) {
+                    System.out.println("Voila, got the image from cache!");
+                    return bitmap;
+                }else {
+                Log.e("src", url);
+                URL url1 = new URL(url);
+                HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
                 connection.setDoInput(true);
                 connection.connect();
                 InputStream input = connection.getInputStream();
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
+                bitmap = BitmapFactory.decodeStream(input);
+                addBitmapToMemoryCache(url, bitmap);
                 Log.e("Bitmap", "returned");
-                return myBitmap;
+                return bitmap;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("Exception", e.getMessage());
@@ -134,14 +171,52 @@ public class BlogActivity extends BaseActivity{
         }
 
         protected void onPostExecute(Bitmap bitmap) {
-            imageView.setImageBitmap(bitmap);
-            imageView.setVisibility(View.VISIBLE);
-            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+            if (render) {
+                imageView.setImageBitmap(bitmap);
+//                imageView.setVisibility(View.VISIBLE);
+                loading = false;
+//                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+            }
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    private void initializeCache() {
+        // Get max available VM memory, exceeding this amount will throw an
+        // OutOfMemory exception. Stored in kilobytes as LruCache takes an
+        // int in its constructor.
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        System.out.println("maxMemory:" + maxMemory);
+        // Use 1/8th of the available memory for this memory cache.
+        final int cacheSize = maxMemory / 4;
+
+        mMemoryCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(String key, Bitmap bitmap) {
+                // The cache size will be measured in kilobytes rather than
+                // number of items.
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+    }
+
+    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+        if (getBitmapFromMemCache(key) == null) {
+            mMemoryCache.put(key, bitmap);
+        }
+    }
+
+    public Bitmap getBitmapFromMemCache(String key) {
+        return mMemoryCache.get(key);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
     }
 }
