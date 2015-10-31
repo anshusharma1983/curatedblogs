@@ -1,6 +1,8 @@
 package com.curatedblogs.app.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -10,6 +12,9 @@ import android.util.Log;
 import android.util.LruCache;
 import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +49,8 @@ public class BlogActivity extends BaseActivity{
     private SwipeDetector sd;
     private LruCache<String, Bitmap> mMemoryCache;
     boolean loading = false;
+    Button readMoreButton;
+    Button shareButton;
 
 //    SwipeDetector sd;
 
@@ -55,25 +62,59 @@ public class BlogActivity extends BaseActivity{
         this.imageView = (ImageView) findViewById(R.id.image);
         this.titleView = (TextView) findViewById(R.id.title);
         this.articleView = (TextView) findViewById(R.id.article);
+        this.readMoreButton = (Button) findViewById(R.id.readMoreButton);
+        this.shareButton = (Button) findViewById(R.id.shareButton);
         ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
         parseQuery.orderByDescending("createdAt");
         parseQuery.whereEqualTo("deleted", false);
         initializeCache();
-        runParseQuery(parseQuery, new IParseQueryRunner<Blog>() {
+        initializeBlogs(parseQuery);
+        initializeSwipe();
+        initializeButtons();
+    }
+
+    private void initializeButtons() {
+        readMoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onComplete(final List<Blog> result) {
-                for (Blog blog : result) {
-//                    new BitMapTask(blog.getFileURL(), false).execute(blog.getFileURL());
+            public void onClick(View view) {
+                String url = blogs.get(currentBlog).getSource();
+                if (url == null || url.equalsIgnoreCase("")) {
+                    Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                blogs = result;
-                final Blog blog = result.get(0);
-                showBlog(blog);
-                if (currentBlog < blogs.size() - 1) {
-                    new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
-                }
+                AlertDialog.Builder alert = new AlertDialog.Builder(activity);
+                alert.setTitle("Powered by curatedblogs");
+                WebView wv = new WebView(activity);
+                wv.loadUrl(url);
+                wv.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        view.loadUrl(url);
+
+                        return true;
+                    }
+                });
+
+                alert.setView(wv);
+                alert.setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                alert.show();
+
             }
         });
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(activity, "coming soon", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
+    private void initializeSwipe() {
         sd = new SwipeDetector(this, new SwipeDetector.OnSwipeListener() {
             @Override
             public void onSwipeUp(float distance, float velocity) {
@@ -116,6 +157,22 @@ public class BlogActivity extends BaseActivity{
         });
     }
 
+    private void initializeBlogs(ParseQuery<Blog> parseQuery) {
+        runParseQuery(parseQuery, new IParseQueryRunner<Blog>() {
+            @Override
+            public void onComplete(final List<Blog> result) {
+                for (Blog blog : result) {
+//                    new BitMapTask(blog.getFileURL(), false).execute(blog.getFileURL());
+                }
+                blogs = result;
+                final Blog blog = result.get(0);
+                showBlog(blog);
+                if (currentBlog < blogs.size() - 1) {
+                    new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
+                }
+            }
+        });
+    }
 
 
     @Override
@@ -125,7 +182,7 @@ public class BlogActivity extends BaseActivity{
 
     private void showBlog(Blog blog) {
         titleView.setText(blog.getTitle());
-        titleView.setTextAppearance(this, android.R.style.TextAppearance_Large);
+        titleView.setTextAppearance(this, android.R.style.TextAppearance_Medium);
         articleView.setText(Html.fromHtml(Html.fromHtml(blog.getUrl()).toString()));
 //        imageView.setVisibility(View.GONE);
         loading = true;
