@@ -54,23 +54,13 @@ android {
 }
 dependencies {
     compile files("libs/android-support-v4.jar")
-    compile 'com.parse.bolts:bolts-android:1.1.4'
     compile fileTree(dir: 'libs', include: ['*.*'])
     compile('com.facebook.android:facebook-android-sdk:4.0.0')
             {
                 exclude module: 'support-v4'
             }
-    compile('com.google.code.gson:gson:2.3.1')
-    compile('com.pubnub:pubnub:3.7.2')
+    compile 'com.parse.bolts:bolts-android:1.1.4'
+    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.pubnub:pubnub:3.7.2'
     compile 'de.hdodenhof:circleimageview:1.3.0'
-    compile 'com.google.code.gson:gson:1.7.2'
 }
-/* Uncomment if you enable ProGuard and you want to automatically upload symbols on build.
-parse {
-  applicationId YOUR_APPLICATION_ID
-  masterKey YOUR_MASTER_KEY
-
-  // Make symbol upload automatic. Otherwise, use e.g. ../gradlew parseUploadSymbolsDebug;
-  uploadSymbols true
-}
-*/

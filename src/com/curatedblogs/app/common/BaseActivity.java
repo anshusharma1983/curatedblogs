@@ -1,10 +1,10 @@
 package com.curatedblogs.app.common;
 
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -18,7 +18,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-public class BaseActivity extends FragmentActivity {
+public class BaseActivity extends Activity {
     private ProgressDialog progressDialog;
 
     public ParseUser getCurrentUser() {

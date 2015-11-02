@@ -6,6 +6,7 @@ import android.view.ViewConfiguration;
 import android.widget.ImageView;
 
 import com.curatedblogs.app.domain.Blog;
+import com.curatedblogs.app.domain.Bookmark;
 import com.facebook.AccessToken;
 import com.parse.Parse;
 import com.parse.ParseACL;
@@ -51,12 +52,13 @@ public class BlogApplication extends Application {
         ParseACL defaultACL = new ParseACL();
         defaultACL.setPublicReadAccess(true);
         ParseACL.setDefaultACL(defaultACL, true);
-        registerSubClasses();
-        currentPackageName = getPackageName();
         Parse.initialize(this, "Hb2JQX1qTc5Jf6wNqLgTXSDFvP9xgrCHVgAkfKEv",
                 "wZR8mpIeBYcqcvePn5bE1b3VwJmIe13PERyregDO");
+        registerSubClasses();
+        currentPackageName = getPackageName();
         ParseInstallation.getCurrentInstallation().saveInBackground();
-
+        System.out.println("Saving anon user");
+        ParseUser.getCurrentUser().saveInBackground();
         try {
             ViewConfiguration config = ViewConfiguration.get(this);
             Field menuKeyField = ViewConfiguration.class.getDeclaredField("sHasPermanentMenuKey");
@@ -71,6 +73,7 @@ public class BlogApplication extends Application {
 
     private void registerSubClasses() {
         ParseObject.registerSubclass(Blog.class);
+        ParseObject.registerSubclass(Bookmark.class);
     }
 
     public String getCurrentPackageName() {

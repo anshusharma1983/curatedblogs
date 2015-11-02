@@ -2,30 +2,45 @@ package com.curatedblogs.app.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.util.LruCache;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.curatedblogs.app.R;
 import com.curatedblogs.app.common.BaseActivity;
 import com.curatedblogs.app.domain.Blog;
+import com.curatedblogs.app.domain.Bookmark;
 import com.curatedblogs.app.interfaces.IParseQueryRunner;
 import com.curatedblogs.app.utils.OnSwipeListener;
 import com.curatedblogs.app.utils.SwipeDetector;
+import com.parse.FindCallback;
+import com.parse.ParseException;
 import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,10 +50,12 @@ import java.util.List;
 
 import bolts.Task;
 
+import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
+
 /**
  * Created by Anshu on 28/10/15.
  */
-public class BlogActivity extends BaseActivity{
+public class BlogActivity extends BaseActivity {
 
     Activity activity;
     ImageView imageView;
@@ -51,8 +68,8 @@ public class BlogActivity extends BaseActivity{
     boolean loading = false;
     Button readMoreButton;
     Button shareButton;
-
-//    SwipeDetector sd;
+    Button bookmarkButton;
+    //    SwipeDetector sd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +81,48 @@ public class BlogActivity extends BaseActivity{
         this.articleView = (TextView) findViewById(R.id.article);
         this.readMoreButton = (Button) findViewById(R.id.readMoreButton);
         this.shareButton = (Button) findViewById(R.id.shareButton);
-        ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
-        parseQuery.orderByDescending("createdAt");
-        parseQuery.whereEqualTo("deleted", false);
+        this.bookmarkButton = (Button) findViewById(R.id.bookmarkButton);
+        Bundle b = getIntent().getExtras();
+        String key = null;
+        boolean isbookmark = false;
+        if (null != b) {
+            key = b.getString("key");
+        }
+        if (key != null && key.equals("bookmark")) {
+            System.out.println("Running the activity for bookmark");
+            isbookmark = true;
+        }
         initializeCache();
-        initializeBlogs(parseQuery);
+        initializeBlogs(isbookmark);
         initializeSwipe();
         initializeButtons();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent = new Intent(activity, BlogActivity.class);
+        switch(item.getItemId()) {
+            case R.id.articles:
+                showToast("Selected articles");
+                startActivity(intent);
+                finish();
+                return true;
+            case R.id.bookmarks:
+                showToast("Selected bookmarks");
+                intent.putExtra("key", "bookmark");
+                startActivity(intent);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void initializeButtons() {
@@ -82,8 +134,7 @@ public class BlogActivity extends BaseActivity{
                     Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                AlertDialog.Builder alert = new AlertDialog.Builder(activity);
-                alert.setTitle("Powered by curatedblogs");
+                Dialog dialog=new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
                 WebView wv = new WebView(activity);
                 wv.loadUrl(url);
                 wv.setWebViewClient(new WebViewClient() {
@@ -94,22 +145,26 @@ public class BlogActivity extends BaseActivity{
                         return true;
                     }
                 });
-
-                alert.setView(wv);
-                alert.setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-                alert.show();
-
+                dialog.setContentView(wv);
+                dialog.show();
             }
         });
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Toast.makeText(activity, "coming soon", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        bookmarkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Blog blogToShow = blogs.get(currentBlog);
+                Bookmark bookmark = new Bookmark();
+                bookmark.setBlogObjectId(blogToShow.getObjectId());
+                bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
+                bookmark.saveInBackground();
+                showToast(blogToShow.getTitle() + " bookmarked !");
             }
         });
     }
@@ -123,7 +178,18 @@ public class BlogActivity extends BaseActivity{
                 }
                 System.out.println("Swipe up");
                 if (currentBlog < blogs.size() - 1) {
-                    showBlog(blogs.get(++currentBlog));
+//                    System.out.println("---Current user info----\n ParseUser.getCurrentUser():" + ParseUser.getCurrentUser()
+//                            + "\n ParseUser.getCurrentUser().getObjectId()" + ParseUser.getCurrentUser().getObjectId()
+//                            + " \n ParseUser.getCurrentUser().getUsername():"
+//                            + ParseUser.getCurrentUser().getUsername() + "\n ParseUser.getCurrentUser().getSessionToken():"
+//                            + ParseUser.getCurrentUser().getSessionToken());
+                    currentBlog ++;
+                    Blog blogToShow = blogs.get(currentBlog);
+                    Bookmark bookmark = new Bookmark();
+                    bookmark.setBlogObjectId(blogToShow.getObjectId());
+                    bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
+//                    bookmark.saveInBackground();
+                    showBlog(blogToShow);
                     if (currentBlog < blogs.size() - 1) {
                         new BitMapTask(blogs.get(currentBlog+1).getFileURL(), false).execute(blogs.get(currentBlog+1).getFileURL());
                     }
@@ -157,21 +223,46 @@ public class BlogActivity extends BaseActivity{
         });
     }
 
-    private void initializeBlogs(ParseQuery<Blog> parseQuery) {
-        runParseQuery(parseQuery, new IParseQueryRunner<Blog>() {
-            @Override
-            public void onComplete(final List<Blog> result) {
-                for (Blog blog : result) {
-//                    new BitMapTask(blog.getFileURL(), false).execute(blog.getFileURL());
+    private void initializeBlogs(boolean isBookMark) {
+        if (!isBookMark) {
+            ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
+            parseQuery.orderByDescending("createdAt");
+            parseQuery.whereEqualTo("deleted", false);
+            parseQuery.findInBackground(new FindCallback<Blog>() {
+                @Override
+                public void done(List<Blog> result, ParseException e) {
+                    blogs = result;
+                    final Blog blog = result.get(0);
+                    showBlog(blog);
+                    if (currentBlog < blogs.size() - 1) {
+                        new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
+                    }
                 }
-                blogs = result;
-                final Blog blog = result.get(0);
-                showBlog(blog);
-                if (currentBlog < blogs.size() - 1) {
-                    new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
+            });
+        }else {
+            String userId = ParseUser.getCurrentUser().getObjectId();
+            ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
+            parseQuery.orderByDescending("createdAt");
+            parseQuery.whereEqualTo("deleted", false);
+            ParseQuery<Bookmark> bookmarkParseQuery = ParseQuery.getQuery(Bookmark.class);
+            bookmarkParseQuery.whereEqualTo("userId", userId);
+            parseQuery.whereMatchesKeyInQuery("objectId", "blogObjectId", bookmarkParseQuery);
+            parseQuery.findInBackground(new FindCallback<Blog>() {
+                @Override
+                public void done(List<Blog> result, ParseException e) {
+                    if (result!=null && result.size() > 0) {
+                        blogs = result;
+                        final Blog blog = result.get(0);
+                        showBlog(blog);
+                        if (currentBlog < blogs.size() - 1) {
+                            new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
+                        }
+                    } else {
+                        showToast("You have no bookmarks");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
 
@@ -275,5 +366,9 @@ public class BlogActivity extends BaseActivity{
     protected void onStop() {
         super.onStop();
 
+    }
+
+    public void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }
