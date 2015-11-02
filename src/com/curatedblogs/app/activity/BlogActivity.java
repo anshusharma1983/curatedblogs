@@ -65,7 +65,7 @@ public class BlogActivity extends BaseActivity {
     int currentBlog = 0;
     private SwipeDetector sd;
     private LruCache<String, Bitmap> mMemoryCache;
-    boolean loading = false;
+    boolean loading = true;
     Button readMoreButton;
     Button shareButton;
     Button bookmarkButton;
@@ -173,7 +173,8 @@ public class BlogActivity extends BaseActivity {
         sd = new SwipeDetector(this, new SwipeDetector.OnSwipeListener() {
             @Override
             public void onSwipeUp(float distance, float velocity) {
-                if (loading) {
+                if (loading || blogs == null || blogs.size() == 0) {
+                    System.out.println("Swipe not ready");
                     return;
                 }
                 System.out.println("Swipe up");
@@ -200,7 +201,8 @@ public class BlogActivity extends BaseActivity {
 
             @Override
             public void onSwipeDown(float distance, float velocity) {
-                if (loading) {
+                if (loading || blogs == null || blogs.size() == 0) {
+                    System.out.println("Swipe not ready");
                     return;
                 }
                 System.out.println("SwipeDown");
@@ -225,6 +227,7 @@ public class BlogActivity extends BaseActivity {
 
     private void initializeBlogs(boolean isBookMark) {
         if (!isBookMark) {
+            loading = true;
             ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
             parseQuery.orderByDescending("createdAt");
             parseQuery.whereEqualTo("deleted", false);
@@ -237,9 +240,11 @@ public class BlogActivity extends BaseActivity {
                     if (currentBlog < blogs.size() - 1) {
                         new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
                     }
+                    loading = false;
                 }
             });
         }else {
+            loading = true;
             String userId = ParseUser.getCurrentUser().getObjectId();
             ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
             parseQuery.orderByDescending("createdAt");
@@ -250,6 +255,7 @@ public class BlogActivity extends BaseActivity {
             parseQuery.findInBackground(new FindCallback<Blog>() {
                 @Override
                 public void done(List<Blog> result, ParseException e) {
+
                     if (result!=null && result.size() > 0) {
                         blogs = result;
                         final Blog blog = result.get(0);
@@ -257,8 +263,13 @@ public class BlogActivity extends BaseActivity {
                         if (currentBlog < blogs.size() - 1) {
                             new BitMapTask(blogs.get(currentBlog + 1).getFileURL(), false).execute(blogs.get(currentBlog + 1).getFileURL());
                         }
+                        loading = false;
                     } else {
                         showToast("You have no bookmarks");
+                        loading = false;
+                        Intent intent = new Intent(activity, BlogActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
                 }
             });

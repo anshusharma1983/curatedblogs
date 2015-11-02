@@ -102,6 +102,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_weight="1">
+
             <Button
                 android:id="@+id/readMoreButton"
                 style="?android:attr/buttonStyleSmall"
@@ -112,20 +113,24 @@
                 android:layout_centerInParent="true"
                 android:background="@drawable/ic_open_in_browser_black_24dp" />
         </RelativeLayout>
+
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1">
+
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/bookmarkButton"
-                android:background="@drawable/ic_bookmark_border_black_18dp"
+                android:background="@drawable/ic_bookmark_border_black_24dp"
                 android:layout_centerInParent="true"
                 android:alpha="0.75"
                 style="?android:attr/buttonStyleSmall" />
         </RelativeLayout>
+
         <RelativeLayout
+
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
@@ -143,7 +148,8 @@
                 android:layout_marginRight="30dp"
                 android:layout_marginLeft="20dp"
                 android:layout_centerInParent="true"
-                android:background="@drawable/ic_forward_black_18dp" />
+                android:background="@drawable/ic_forward_black_24dp" />
         </RelativeLayout>
+
     </LinearLayout>
 </LinearLayout>
