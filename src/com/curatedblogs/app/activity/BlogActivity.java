@@ -1,17 +1,23 @@
 package com.curatedblogs.app.activity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.text.Html;
 import android.util.Log;
 import android.util.LruCache;
@@ -20,6 +26,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.AdapterView;
@@ -32,6 +40,7 @@ import android.widget.Toast;
 
 import com.curatedblogs.app.R;
 import com.curatedblogs.app.common.BaseActivity;
+import com.curatedblogs.app.common.MyTagHandler;
 import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.Bookmark;
 import com.curatedblogs.app.interfaces.IParseQueryRunner;
@@ -73,8 +82,20 @@ public class BlogActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         this.activity = this;
+
+/*Saurabh*/
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+        ActionBar actionBar = getActionBar();
+        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#00000000")));
+        getActionBar().setDisplayShowTitleEnabled(false);
+
+
+/*Saurabh*/
+
+
         setContentView(R.layout.blog_activity);
         this.imageView = (ImageView) findViewById(R.id.image);
         this.titleView = (TextView) findViewById(R.id.title);
@@ -130,6 +151,14 @@ public class BlogActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 String url = blogs.get(currentBlog).getSource();
+
+                /*added by Saurabh on 03Nov15*/
+                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+                mp.start();
+                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(100);
+                /*added by Saurabh on 03Nov15*/
+
                 if (url == null || url.equalsIgnoreCase("")) {
                     Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
                     return;
@@ -153,12 +182,28 @@ public class BlogActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(activity, "coming soon", Toast.LENGTH_SHORT).show();
+
+                /*added by Saurabh on 03Nov15*/
+                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+                mp.start();
+                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(100);
+                /*added by Saurabh on 03Nov15*/
             }
         });
 
         bookmarkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                /*added by Saurabh on 03Nov15*/
+                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
+                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+                mp.start();
+                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(100);
+                /*added by Saurabh on 03Nov15*/
+
                 Blog blogToShow = blogs.get(currentBlog);
                 Bookmark bookmark = new Bookmark();
                 bookmark.setBlogObjectId(blogToShow.getObjectId());
@@ -187,6 +232,11 @@ public class BlogActivity extends BaseActivity {
                     currentBlog ++;
                     Blog blogToShow = blogs.get(currentBlog);
                     Bookmark bookmark = new Bookmark();
+
+// Added by Saurabh on 3 Nov
+                    bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
+// Added by Saurabh on 3 Nov
+
                     bookmark.setBlogObjectId(blogToShow.getObjectId());
                     bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
 //                    bookmark.saveInBackground();
@@ -285,8 +335,9 @@ public class BlogActivity extends BaseActivity {
     private void showBlog(Blog blog) {
         titleView.setText(blog.getTitle());
         titleView.setTextAppearance(this, android.R.style.TextAppearance_Medium);
-        articleView.setText(Html.fromHtml(Html.fromHtml(blog.getUrl()).toString()));
+        articleView.setText(Html.fromHtml(Html.fromHtml(blog.getUrl()).toString(), null, new MyTagHandler()));
 //        imageView.setVisibility(View.GONE);
+
         loading = true;
 //        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
         imageView.setImageResource(R.drawable.blog);
@@ -311,16 +362,16 @@ public class BlogActivity extends BaseActivity {
                     System.out.println("Voila, got the image from cache!");
                     return bitmap;
                 }else {
-                Log.e("src", url);
-                URL url1 = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-                bitmap = BitmapFactory.decodeStream(input);
-                addBitmapToMemoryCache(url, bitmap);
-                Log.e("Bitmap", "returned");
-                return bitmap;
+                    Log.e("src", url);
+                    URL url1 = new URL(url);
+                    HttpURLConnection connection = (HttpURLConnection) url1.openConnection();
+                    connection.setDoInput(true);
+                    connection.connect();
+                    InputStream input = connection.getInputStream();
+                    bitmap = BitmapFactory.decodeStream(input);
+                    addBitmapToMemoryCache(url, bitmap);
+                    Log.e("Bitmap", "returned");
+                    return bitmap;
                 }
             } catch (IOException e) {
                 e.printStackTrace();

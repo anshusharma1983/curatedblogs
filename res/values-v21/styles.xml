@@ -1,4 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="AppBaseTheme" parent="android:Theme.Holo.Light.DarkActionBar">
         <item name="android:actionOverflowButtonStyle">@style/MyActionButtonOverflow</item>
     </style>
@@ -16,3 +18,4 @@
 
 
 </resources>
+
