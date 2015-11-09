@@ -1,13 +1,17 @@
 package com.curatedblogs.app.domain;
 
+import android.os.Parcelable;
+
 import com.parse.ParseClassName;
 import com.parse.ParseObject;
+
+import java.io.Serializable;
 
 /**
  * Created by Anshu on 28/10/15.
  */
 @ParseClassName("Blog")
-public class Blog extends ParseObject {
+public class Blog extends ParseObject implements Serializable {
     private String author;
     private String title;
     private String url;

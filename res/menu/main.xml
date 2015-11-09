@@ -3,22 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.navigation.drawer.activity.MainActivity" >
 
-
-    <item android:id="@+id/refresh"
-        android:title="Refresh">
-
+    <item android:id="@+id/bookmarks"
+        android:title="My Bookmarks">
     </item>
 
     <item android:id="@+id/articles"
         android:title="All Posts">
-
     </item>
-
-    <item android:id="@+id/bookmarks"
-        android:title="My Bookmarks">
-
-    </item>
-
-
-
 </menu>
