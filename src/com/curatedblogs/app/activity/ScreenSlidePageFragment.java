@@ -16,6 +16,7 @@
 
 package com.curatedblogs.app.activity;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.content.Context;
@@ -26,8 +27,11 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +41,8 @@ import com.curatedblogs.app.common.BitMapTask;
 import com.curatedblogs.app.common.MyTagHandler;
 import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.BlogVO;
+import com.curatedblogs.app.domain.Bookmark;
+import com.parse.ParseUser;
 
 import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
 import static com.curatedblogs.app.activity.BlogActivity.*;
@@ -56,6 +62,8 @@ public class ScreenSlidePageFragment extends Fragment {
      */
     private int mPageNumber;
     private BlogVO blog;
+    private Animation animScale;
+
 
     /**
      * Factory method for this fragment class. Constructs a new fragment for the given page number.
@@ -66,7 +74,6 @@ public class ScreenSlidePageFragment extends Fragment {
         args.putInt(ARG_PAGE, pageNumber);
         args.putSerializable("blog", blog);
         fragment.setArguments(args);
-//        System.out.println("Creating fragment:" + blog.getTitle());
         return fragment;
     }
 
@@ -78,6 +85,7 @@ public class ScreenSlidePageFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mPageNumber = getArguments().getInt(ARG_PAGE);
         this.blog = (BlogVO) getArguments().getSerializable("blog");
+        this.animScale = AnimationUtils.loadAnimation(getActivity(), R.anim.anim_scale);
     }
 
     @Override
@@ -95,64 +103,54 @@ public class ScreenSlidePageFragment extends Fragment {
         TextView article = (TextView) rootView.findViewById(R.id.article);
         ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
         article.setText(Html.fromHtml(Html.fromHtml(blog.getArticle()).toString(), null, new MyTagHandler()));
+        Button readMoreButton = null, bookmarkButton = null;
+        readMoreButton = (Button) rootView.findViewById(R.id.readMoreButton);
+        bookmarkButton = (Button) rootView.findViewById(R.id.bookmarkButton);
+        initializeButtons(readMoreButton, bookmarkButton, blog, getActivity());
         new BitMapTask(blog.getFileURL(), true, imageView).execute(blog.getFileURL());
         return rootView;
     }
 
-//    private void initializeButtons() {
-//        readMoreButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                String url = blogs.get(currentBlog).getSource();
-//
-////                /*added by Saurabh on 03Nov15*/
-////                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
-////                mp.start();
-////                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
-////                v.vibrate(100);
-////                /*added by Saurabh on 03Nov15*/
-//
-//                if (url == null || url.equalsIgnoreCase("")) {
-//                    Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
-//                    return;
-//                }
-//                Dialog dialog = new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
-//                WebView wv = new WebView(activity);
-//                wv.loadUrl(url);
-//                wv.setWebViewClient(new WebViewClient() {
-//                    @Override
-//                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-//                        view.loadUrl(url);
-//
-//                        return true;
-//                    }
-//                });
-//                dialog.setContentView(wv);
-//                dialog.show();
-//            }
-//        });
-//
-//        bookmarkButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//
-//                /*added by Saurabh on 03Nov15*/
-//                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
-//                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
-//                mp.start();
-//                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
-//                v.vibrate(100);
-//                /*added by Saurabh on 03Nov15*/
-//
-////                Blog blogToShow = blogs.get(currentBlog);
-////                Bookmark bookmark = new Bookmark();
-////                bookmark.setBlogObjectId(blogToShow.getObjectId());
-////                bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
-////                bookmark.saveInBackground();
-//                showToast("Article bookmarked !");
-//            }
-//        });
-//    }
+    private void initializeButtons(Button readMoreButton, final Button bookmarkButton, final BlogVO blog, final Activity activity) {
+        readMoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(animScale);
+                String url = blog.getSource();
+                if (url == null || url.equalsIgnoreCase("")) {
+                    Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                Dialog dialog = new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
+                WebView wv = new WebView(activity);
+                wv.loadUrl(url);
+                wv.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                        view.loadUrl(url);
+
+                        return true;
+                    }
+                });
+                dialog.setContentView(wv);
+                dialog.show();
+            }
+        });
+
+        bookmarkButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                view.startAnimation(animScale);
+                Bookmark bookmark = new Bookmark();
+                System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
+                        + ", \nuserObjectId:" + ParseUser.getCurrentUser().getObjectId());
+                bookmark.setBlogObjectId(blog.getObjectId());
+                bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
+                bookmark.saveInBackground();
+                Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     /**
      * Returns the page number represented by this fragment object.

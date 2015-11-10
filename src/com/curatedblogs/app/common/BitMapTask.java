@@ -57,9 +57,6 @@ public class BitMapTask extends AsyncTask<String, Void, Bitmap> {
     protected void onPostExecute(Bitmap bitmap) {
         if (render) {
             imageView.setImageBitmap(bitmap);
-//                imageView.setVisibility(View.VISIBLE);
-//            loading = false;
-//                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
     }
 

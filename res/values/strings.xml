@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Perspectives</string>
+    <string name="app_name">Insights</string>
     <string name="title_activity_nav_drawer">NavDrawerActivity</string>
 
     <string name="title_section1">Section 1</string>
