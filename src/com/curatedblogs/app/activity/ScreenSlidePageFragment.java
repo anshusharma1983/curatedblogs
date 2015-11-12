@@ -102,6 +102,10 @@ public class ScreenSlidePageFragment extends Fragment {
         title.setText(blog.getTitle());
         TextView article = (TextView) rootView.findViewById(R.id.article);
         ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
+        TextView articleSource = (TextView) rootView.findViewById(R.id.articleSource);
+        if (blog.getCategory() != null && !blog.getCategory().equals("")) {
+            articleSource.setText(blog.getCategory());
+        }
         article.setText(Html.fromHtml(Html.fromHtml(blog.getArticle()).toString(), null, new MyTagHandler()));
         Button readMoreButton = null, bookmarkButton = null;
         readMoreButton = (Button) rootView.findViewById(R.id.readMoreButton);

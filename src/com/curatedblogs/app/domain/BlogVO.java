@@ -13,17 +13,19 @@ public class BlogVO implements Serializable {
     private String fileURL;
     private String objectId;
     private String source;
+    private String category;
 
-    public BlogVO(String title, String article, String fileURL, String source, String objectId){
+    public BlogVO(String title, String article, String fileURL, String source, String objectId, String category){
         this.title = title;
         this.article = article;
         this.fileURL = fileURL;
         this.source = source;
         this.objectId = objectId;
+        this.category = category;
     }
 
     public static BlogVO getInstance(Blog blog) {
-        return new BlogVO(blog.getTitle(), blog.getUrl(), blog.getFileURL(), blog.getSource(), blog.getObjectId());
+        return new BlogVO(blog.getTitle(), blog.getUrl(), blog.getFileURL(), blog.getSource(), blog.getObjectId(), blog.getCategory());
     }
 
     public static List<BlogVO> initializeList(List<Blog> blogs){
@@ -73,4 +75,14 @@ public class BlogVO implements Serializable {
     public void setObjectId(String objectId) {
         this.objectId = objectId;
     }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+
 }

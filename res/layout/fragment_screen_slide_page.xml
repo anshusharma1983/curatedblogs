@@ -14,14 +14,13 @@
   limitations under the License.
   -->
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical" android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:weightSum="10">
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="10"
+    android:background="@color/white">
 
     <!-- Dummy content. -->
     <!--<LinearLayout android:layout_width="match_parent"
@@ -47,7 +46,7 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="4.2">
+        android:layout_weight="4.20">
 
         <ImageView
             android:id="@+id/image"
@@ -59,7 +58,7 @@
             android:src="@drawable/blog"
             android:scaleType="fitXY" />
 
-        <TextView
+       <!-- <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -76,7 +75,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
             android:layout_alignRight="@+id/image"
-            android:layout_alignBottom="@+id/image" />
+            android:layout_alignBottom="@+id/image" />-->
     </RelativeLayout>
 
     <LinearLayout
@@ -144,10 +143,10 @@
         android:paddingRight="7dp">
 
         <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/articleSource"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Enterpreneur.com"
+            android:text="CuratedBlogs"
             android:textColor="#616161"
             android:textSize="10dp"
             android:layout_toRightOf="@+id/readMoreButton"
@@ -212,6 +211,5 @@
         </RelativeLayout>
 
     </LinearLayout>
-    </LinearLayout>
+</LinearLayout>
 
-</ScrollView>

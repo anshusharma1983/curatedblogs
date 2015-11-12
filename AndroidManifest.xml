@@ -42,8 +42,10 @@
                 <data android:scheme="com.curatedblogs.app" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.ScreenSlideActivity">
+        <activity android:name=".activity.ScreenSlideActivity"
+            android:theme="@style/AppTheme">
         </activity>
+
         <service android:name="com.parse.PushService" />
 
         <receiver android:name="com.parse.ParseBroadcastReceiver" >

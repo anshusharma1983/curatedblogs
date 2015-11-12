@@ -19,6 +19,16 @@ public class Blog extends ParseObject implements Serializable {
     private String source;
     private Boolean deleted;
 
+    public String getCategory() {
+        return getString("category");
+    }
+
+    public void setCategory(String category) {
+        put("category", category);
+    }
+
+    private String category;
+
     public Boolean getDeleted() {
         return getBoolean("deleted");
     }
