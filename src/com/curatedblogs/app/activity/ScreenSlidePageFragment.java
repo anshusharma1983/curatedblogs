@@ -42,7 +42,12 @@ import com.curatedblogs.app.common.MyTagHandler;
 import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.BlogVO;
 import com.curatedblogs.app.domain.Bookmark;
+import com.parse.FindCallback;
+import com.parse.ParseException;
+import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.List;
 
 import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
 import static com.curatedblogs.app.activity.BlogActivity.*;
@@ -103,13 +108,16 @@ public class ScreenSlidePageFragment extends Fragment {
         TextView article = (TextView) rootView.findViewById(R.id.article);
         ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
         TextView articleSource = (TextView) rootView.findViewById(R.id.articleSource);
+        Button bookmarkButton = (Button) rootView.findViewById(R.id.bookmarkButton);
         if (blog.getCategory() != null && !blog.getCategory().equals("")) {
             articleSource.setText(blog.getCategory());
         }
         article.setText(Html.fromHtml(Html.fromHtml(blog.getArticle()).toString(), null, new MyTagHandler()));
-        Button readMoreButton = null, bookmarkButton = null;
+        if (blog.getBookmarked()) {
+            bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
+        }
+        Button readMoreButton = null;
         readMoreButton = (Button) rootView.findViewById(R.id.readMoreButton);
-        bookmarkButton = (Button) rootView.findViewById(R.id.bookmarkButton);
         initializeButtons(readMoreButton, bookmarkButton, blog, getActivity());
         new BitMapTask(blog.getFileURL(), true, imageView).execute(blog.getFileURL());
         return rootView;
@@ -145,13 +153,35 @@ public class ScreenSlidePageFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 view.startAnimation(animScale);
-                Bookmark bookmark = new Bookmark();
-                System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
-                        + ", \nuserObjectId:" + ParseUser.getCurrentUser().getObjectId());
-                bookmark.setBlogObjectId(blog.getObjectId());
-                bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
-                bookmark.saveInBackground();
-                Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
+                if (blog.getBookmarked()) {
+                    ParseQuery<Bookmark> parseQuery = ParseQuery.getQuery(Bookmark.class);
+                    parseQuery.whereEqualTo("blogObjectId", blog.getObjectId());
+                    parseQuery.whereEqualTo("userId", ParseUser.getCurrentUser().getObjectId());
+                    System.out.println("Finding bookmark with:\n blogObjectId" + blog.getObjectId()
+                            + "\nuserId:" + ParseUser.getCurrentUser().getObjectId());
+                    blog.setBookmarked(false);
+                    parseQuery.findInBackground(new FindCallback<Bookmark>() {
+                        @Override
+                        public void done(List<Bookmark> list, ParseException e) {
+                            // would definitely get a single object here
+                            if (list!=null & list.size() > 0) {
+                                Bookmark bookmark = list.get(0);
+                                System.out.print("Deleting bookmark, ObjectId:" + bookmark.getObjectId());
+                                bookmark.deleteInBackground();
+                            }
+                        }
+                    });
+                    Toast.makeText(activity, "Bookmark removed !", Toast.LENGTH_SHORT).show();
+                    view.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
+                }else {
+                    Bookmark bookmark = new Bookmark();
+                    System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
+                            + ", \nuserObjectId:" + ParseUser.getCurrentUser().getObjectId());
+                    bookmark.setBlogObjectId(blog.getObjectId());
+                    bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
+                    bookmark.saveInBackground();
+                    Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

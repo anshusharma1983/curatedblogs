@@ -18,6 +18,7 @@ public class Blog extends ParseObject implements Serializable {
     private String fileURL;
     private String source;
     private Boolean deleted;
+    private boolean bookmarked = false;
 
     public String getCategory() {
         return getString("category");
@@ -76,4 +77,14 @@ public class Blog extends ParseObject implements Serializable {
     public void setSource(String source) {
         put("source", source);
     }
+
+
+    public boolean isBookmarked() {
+        return bookmarked;
+    }
+
+    public void setBookmarked(boolean bookmarked) {
+        this.bookmarked = bookmarked;
+    }
+
 }

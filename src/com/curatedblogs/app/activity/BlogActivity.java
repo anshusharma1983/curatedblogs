@@ -23,9 +23,12 @@ import com.curatedblogs.app.domain.BlogVO;
 import com.curatedblogs.app.domain.BlogsWrapper;
 import com.curatedblogs.app.domain.Bookmark;
 import com.parse.FindCallback;
+import com.parse.Parse;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,8 +38,8 @@ public class BlogActivity extends BaseActivity {
 
     Activity activity;
     List<Blog> blogs;
-    Boolean isbookmark;
-//    ImageView loadingImageView;
+    Boolean isbookmark = false;
+    ImageView loadingImageView;
 
 
     @Override
@@ -52,6 +55,17 @@ public class BlogActivity extends BaseActivity {
         }
     }
 
+//    @Override
+//    public void onBackPressed() {
+//        System.out.println("back pressed!. isBookmark:" + isbookmark);
+//        if (isbookmark) {
+//            Intent intent = new Intent(activity, BlogActivity.class);
+//            startActivity(intent);
+//            finish();
+//        }
+//        super.onBackPressed();
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +74,7 @@ public class BlogActivity extends BaseActivity {
         getActionBar().hide();
         setContentView(R.layout.blog_activity);
 //        this.loadingImageView = (ImageView) findViewById(R.id.loadingImage);
+//        loadingImageView.setBackgroundResource(R.drawable.front_page);
         Bundle b = getIntent().getExtras();
         String key = null;
         isbookmark = false;
@@ -76,6 +91,7 @@ public class BlogActivity extends BaseActivity {
 
 
     private void initializeBlogs(boolean isBookMark) throws ParseException{
+        final String userId = ParseUser.getCurrentUser().getObjectId();
         if (!isBookMark) {
             ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
             parseQuery.orderByDescending("createdAt");
@@ -84,12 +100,22 @@ public class BlogActivity extends BaseActivity {
                 @Override
                 public void done(List<Blog> list, ParseException e) {
                     blogs = list;
-                    startScreenSlideActivity();
+                    ParseQuery<Bookmark> bookmarkParseQuery = ParseQuery.getQuery(Bookmark.class);
+                    bookmarkParseQuery.whereEqualTo("userId", userId);
+                    List<Bookmark> bookmarks = null;
+                    try {
+                        bookmarks = bookmarkParseQuery.find();
+                    } catch (ParseException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (list != null && list.size()>0) {
+                        updateBookmarks(blogs, bookmarks, false);
+                    }
+                    startScreenSlideActivity(false);
                 }
             });
 //            loadingImageView.setVisibility(View.GONE);
         }else {
-            String userId = ParseUser.getCurrentUser().getObjectId();
             ParseQuery<Blog> parseQuery = ParseQuery.getQuery(Blog.class);
             parseQuery.orderByDescending("createdAt");
             parseQuery.whereEqualTo("deleted", false);
@@ -101,7 +127,9 @@ public class BlogActivity extends BaseActivity {
                 public void done(List<Blog> result, ParseException e) {
                     if (result!=null && result.size() > 0) {
                         blogs = result;
-                        startScreenSlideActivity();
+                        updateBookmarks(blogs, null, true);
+                        startScreenSlideActivity(true);
+
                     } else {
                         showToast("You have no bookmarks");
 //                        loadingImageView.setVisibility(View.GONE);
@@ -115,9 +143,29 @@ public class BlogActivity extends BaseActivity {
         }
     }
 
-    private void startScreenSlideActivity() {
+    private void updateBookmarks(List<Blog> blogs, List<Bookmark> list, Boolean setAllBookmarked) {
+        List<String> bookmarks = new ArrayList<String>();
+        if (!setAllBookmarked) {
+            for (Bookmark bookmark : list) {
+                bookmarks.add(bookmark.getBlogObjectId());
+            }
+        }
+
+        for (Blog blog : blogs) {
+            if (setAllBookmarked) {
+                blog.setBookmarked(true);
+                continue;
+            }
+            if (bookmarks.contains(blog.getObjectId())) {
+                System.out.println("blog:" + blog.getTitle() + " is bookmarked!");
+                blog.setBookmarked(true);
+            }
+        }
+    }
+
+    private void startScreenSlideActivity(Boolean allBookmarks) {
         Intent screenSlideActivity = new Intent(activity, ScreenSlideActivity.class);
-        screenSlideActivity.putExtra("blogWrapper", new BlogsWrapper(BlogVO.initializeList(blogs)));
+        screenSlideActivity.putExtra("blogWrapper", new BlogsWrapper(BlogVO.initializeList(blogs), isbookmark));
         startActivity(screenSlideActivity);
         finish();
     }

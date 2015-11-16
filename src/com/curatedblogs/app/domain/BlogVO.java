@@ -14,18 +14,20 @@ public class BlogVO implements Serializable {
     private String objectId;
     private String source;
     private String category;
+    private Boolean bookmarked;
 
-    public BlogVO(String title, String article, String fileURL, String source, String objectId, String category){
+    public BlogVO(String title, String article, String fileURL, String source, String objectId, String category, Boolean bookmarked){
         this.title = title;
         this.article = article;
         this.fileURL = fileURL;
         this.source = source;
         this.objectId = objectId;
         this.category = category;
+        this.bookmarked = bookmarked;
     }
 
     public static BlogVO getInstance(Blog blog) {
-        return new BlogVO(blog.getTitle(), blog.getUrl(), blog.getFileURL(), blog.getSource(), blog.getObjectId(), blog.getCategory());
+        return new BlogVO(blog.getTitle(), blog.getUrl(), blog.getFileURL(), blog.getSource(), blog.getObjectId(), blog.getCategory(), blog.isBookmarked());
     }
 
     public static List<BlogVO> initializeList(List<Blog> blogs){
@@ -82,6 +84,14 @@ public class BlogVO implements Serializable {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Boolean getBookmarked() {
+        return bookmarked;
+    }
+
+    public void setBookmarked(Boolean bookmarked) {
+        this.bookmarked = bookmarked;
     }
 
 

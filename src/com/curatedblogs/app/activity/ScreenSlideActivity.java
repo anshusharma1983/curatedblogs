@@ -85,6 +85,7 @@ public class ScreenSlideActivity extends FragmentActivity {
      */
     private PagerAdapter mPagerAdapter;
     List<BlogVO> blogs;
+    BlogsWrapper blogsWrapper;
     private Activity activity;
 //    Button readMoreButton;
 //    Button bookmarkButton;
@@ -103,7 +104,7 @@ public class ScreenSlideActivity extends FragmentActivity {
 //        this.bookmarkButton = (Button) findViewById(R.id.bookmarkButton);
 
         // Instantiate a ViewPager and a PagerAdapter.
-        BlogsWrapper blogsWrapper = (BlogsWrapper) getIntent().getSerializableExtra("blogWrapper");
+        blogsWrapper = (BlogsWrapper) getIntent().getSerializableExtra("blogWrapper");
         blogs = blogsWrapper.getBlogs();
         NUM_PAGES = blogs.size();
         System.out.println("No. of pages:" + NUM_PAGES);
@@ -128,6 +129,17 @@ public class ScreenSlideActivity extends FragmentActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onBackPressed() {
+        System.out.println("back pressed!. isBookmark:" + blogsWrapper.getIsBookmark());
+        if (blogsWrapper.getIsBookmark()) {
+            Intent intent = new Intent(activity, BlogActivity.class);
+            startActivity(intent);
+            finish();
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -163,6 +175,7 @@ public class ScreenSlideActivity extends FragmentActivity {
         public ScreenSlidePagerAdapter(FragmentManager fm, List<BlogVO> blogs) {
             super(fm);
             this.list = blogs;
+            notifyDataSetChanged();
         }
 
         @Override
