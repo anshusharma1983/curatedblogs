@@ -180,6 +180,7 @@ public class ScreenSlidePageFragment extends Fragment {
                     bookmark.setBlogObjectId(blog.getObjectId());
                     bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
                     bookmark.saveInBackground();
+                    view.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
                     Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
                 }
             }
