@@ -2,9 +2,12 @@ package com.curatedblogs.app.common;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.ViewConfiguration;
 import android.widget.ImageView;
 
+import com.curatedblogs.app.R;
+import com.curatedblogs.app.activity.PreferenceActivity;
 import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.Bookmark;
 import com.facebook.AccessToken;
@@ -69,6 +72,9 @@ public class BlogApplication extends Application {
         } catch (Exception ex) {
             // Ignore
         }
+        PreferenceManager.setDefaultValues(this, R.xml.fragment_preference, false);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        PreferenceActivity.registerForNotifications();
     }
 
     private void registerSubClasses() {

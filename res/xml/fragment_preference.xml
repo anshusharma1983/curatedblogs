@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Notifications">
+        <CheckBoxPreference
+            android:key="createPref"
+            android:title="New article"
+            android:summary="Get notified when a new article is added"
+            android:defaultValue="true"/>
+        <CheckBoxPreference
+            android:key="updatePref"
+            android:title="Updated article"
+            android:summary="Get notified when existing article is updated"
+            android:defaultValue="flse"/>
+    </PreferenceCategory>
+</PreferenceScreen>
