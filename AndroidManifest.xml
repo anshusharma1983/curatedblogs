@@ -45,6 +45,11 @@
         <activity android:name=".activity.ScreenSlideActivity"
             android:theme="@style/AppTheme">
         </activity>
+        <activity
+            android:name=".activity.PreferenceActivity"
+            android:label="Preferences"
+            android:icon="@drawable/logo">
+        </activity>
 
         <service android:name="com.parse.PushService" />
 

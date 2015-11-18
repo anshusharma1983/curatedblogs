@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <header android:fragment="com.openup.app.fragments.OpenupPreferenceFragment"
+    <header android:fragment="com.curatedblogs.app.activity.BlogPreferenceFragment"
         android:title="Notification settings"
         android:summary="Configure your notification settings" />
 

@@ -10,4 +10,9 @@
     <item android:id="@+id/articles"
         android:title="All Posts">
     </item>
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings" />
+
 </menu>

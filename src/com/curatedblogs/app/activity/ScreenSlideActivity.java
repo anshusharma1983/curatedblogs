@@ -157,9 +157,19 @@ public class ScreenSlideActivity extends FragmentActivity {
                 startActivity(intent);
                 finish();
                 return true;
+            case R.id.action_settings:
+                showToast("Opening settings");
+                openSettings();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void openSettings() {
+        System.out.println("open settings called");
+        Intent intent = new Intent(activity, PreferenceActivity.class);
+        startActivity(intent);
     }
 
     public void showToast(String message) {
