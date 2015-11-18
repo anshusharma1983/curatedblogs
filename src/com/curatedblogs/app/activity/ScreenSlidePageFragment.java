@@ -19,6 +19,7 @@ package com.curatedblogs.app.activity;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -29,10 +30,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +71,7 @@ public class ScreenSlidePageFragment extends Fragment {
     private int mPageNumber;
     private BlogVO blog;
     private Animation animScale;
+    private ProgressDialog progress;
 
 
     /**
@@ -108,7 +112,7 @@ public class ScreenSlidePageFragment extends Fragment {
         TextView article = (TextView) rootView.findViewById(R.id.article);
         ImageView imageView = (ImageView) rootView.findViewById(R.id.image);
         TextView articleSource = (TextView) rootView.findViewById(R.id.articleSource);
-        Button bookmarkButton = (Button) rootView.findViewById(R.id.bookmarkButton);
+        ImageButton bookmarkButton = (ImageButton) rootView.findViewById(R.id.bookmarkButton);
         if (blog.getCategory() != null && !blog.getCategory().equals("")) {
             articleSource.setText(blog.getCategory());
         }
@@ -116,19 +120,29 @@ public class ScreenSlidePageFragment extends Fragment {
         if (blog.getBookmarked()) {
             bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
         }
-        Button readMoreButton = null;
-        readMoreButton = (Button) rootView.findViewById(R.id.readMoreButton);
+        ImageButton readMoreButton = null;
+        readMoreButton = (ImageButton) rootView.findViewById(R.id.readMoreButton);
         initializeButtons(readMoreButton, bookmarkButton, blog, getActivity());
         new BitMapTask(blog.getFileURL(), true, imageView).execute(blog.getFileURL());
         return rootView;
     }
 
-    private void initializeButtons(Button readMoreButton, final Button bookmarkButton, final BlogVO blog, final Activity activity) {
+    private void initializeButtons(ImageButton readMoreButton, final ImageButton bookmarkButton, final BlogVO blog, final Activity activity) {
+        final ProgressBar progressBar = new ProgressBar(getActivity());
         readMoreButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 view.startAnimation(animScale);
                 String url = blog.getSource();
+
+                /*added by Saurabh on 18Nov15*/
+                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+                mp.start();
+                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(100);
+                /*added by Saurabh on 18Nov15*/
+
+
                 if (url == null || url.equalsIgnoreCase("")) {
                     Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
                     return;
@@ -136,14 +150,26 @@ public class ScreenSlidePageFragment extends Fragment {
                 Dialog dialog = new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
                 WebView wv = new WebView(activity);
                 wv.loadUrl(url);
-                wv.setWebViewClient(new WebViewClient() {
+                wv.setWebViewClient(new WebViewClient(){
                     @Override
                     public boolean shouldOverrideUrlLoading(WebView view, String url) {
                         view.loadUrl(url);
-
                         return true;
                     }
                 });
+                wv.setWebChromeClient(new WebChromeClient(){
+                    @Override
+                    public void onProgressChanged(WebView view, int newProgress) {
+                        super.onProgressChanged(view, newProgress);
+                        if (newProgress > 0) {
+                            showProgressDialog("Please Wait");
+                        }
+                        if (newProgress >= 90) {
+                            hideProgressDialog();
+                        }
+                    }
+                });
+
                 dialog.setContentView(wv);
                 dialog.show();
             }
@@ -182,6 +208,30 @@ public class ScreenSlidePageFragment extends Fragment {
                     bookmark.saveInBackground();
                     view.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
                     Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void showProgressDialog(final String msg) {
+
+        getActivity().runOnUiThread(new Runnable() {
+            public void run() {
+                if (progress == null || !progress.isShowing()) {
+                    progress = ProgressDialog.show(getActivity(), "", msg);
+                }
+            }
+        });
+    }
+
+    public void hideProgressDialog() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (progress.isShowing())
+                        progress.dismiss();
+                } catch (Throwable e) {
                 }
             }
         });

@@ -48,7 +48,7 @@
         <activity
             android:name=".activity.PreferenceActivity"
             android:label="Preferences"
-            android:icon="@drawable/logo">
+            android:icon="@drawable/growtist_icon">
         </activity>
 
         <service android:name="com.parse.PushService" />
