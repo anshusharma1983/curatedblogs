@@ -21,6 +21,9 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.graphics.Color;
+import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -33,6 +36,7 @@ import android.view.animation.AnimationUtils;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -49,11 +53,8 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
-
 import java.util.List;
-
 import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
-import static com.curatedblogs.app.activity.BlogActivity.*;
 
 /**
  * A fragment representing a single step in a wizard. The fragment shows a dummy title indicating
@@ -120,98 +121,144 @@ public class ScreenSlidePageFragment extends Fragment {
         if (blog.getBookmarked()) {
             bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
         }
-        ImageButton readMoreButton = null;
+        ImageButton readMoreButton = null, shareButton = null;
+        TextView readMoreText = null, bookmarkText = null, shareText = null;
         readMoreButton = (ImageButton) rootView.findViewById(R.id.readMoreButton);
-        initializeButtons(readMoreButton, bookmarkButton, blog, getActivity());
+        shareButton = (ImageButton) rootView.findViewById(R.id.shareButton);
+        readMoreText = (TextView) rootView.findViewById(R.id.readMoreText);
+        bookmarkText = (TextView) rootView.findViewById(R.id.bookmarkText);
+        shareText = (TextView) rootView.findViewById(R.id.shareText);
+        View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity());
+        View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity());
+        View.OnClickListener bookmarkOnClickListener = new BookmarkOnClickListener(getActivity(), bookmarkButton);
+        shareButton.setOnClickListener(shareOnClickListener);
+        shareText.setOnClickListener(shareOnClickListener);
+        readMoreButton.setOnClickListener(readMoreOnClickListener);
+        readMoreText.setOnClickListener(readMoreOnClickListener);
+        bookmarkButton.setOnClickListener(bookmarkOnClickListener);
+        bookmarkText.setOnClickListener(bookmarkOnClickListener);
         new BitMapTask(blog.getFileURL(), true, imageView).execute(blog.getFileURL());
         return rootView;
     }
 
-    private void initializeButtons(ImageButton readMoreButton, final ImageButton bookmarkButton, final BlogVO blog, final Activity activity) {
-        final ProgressBar progressBar = new ProgressBar(getActivity());
-        readMoreButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.startAnimation(animScale);
-                String url = blog.getSource();
-
-                /*added by Saurabh on 18Nov15*/
-                MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
-                mp.start();
-                Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
-                v.vibrate(100);
-                /*added by Saurabh on 18Nov15*/
-
-
-                if (url == null || url.equalsIgnoreCase("")) {
-                    Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                Dialog dialog = new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
-                WebView wv = new WebView(activity);
-                wv.loadUrl(url);
-                wv.setWebViewClient(new WebViewClient(){
-                    @Override
-                    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                        view.loadUrl(url);
-                        return true;
-                    }
-                });
-                wv.setWebChromeClient(new WebChromeClient(){
-                    @Override
-                    public void onProgressChanged(WebView view, int newProgress) {
-                        super.onProgressChanged(view, newProgress);
-                        if (newProgress > 0) {
-                            showProgressDialog("Please Wait");
-                        }
-                        if (newProgress >= 90) {
-                            hideProgressDialog();
-                        }
-                    }
-                });
-
-                dialog.setContentView(wv);
-                dialog.show();
-            }
-        });
-
-        bookmarkButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                view.startAnimation(animScale);
-                if (blog.getBookmarked()) {
-                    ParseQuery<Bookmark> parseQuery = ParseQuery.getQuery(Bookmark.class);
-                    parseQuery.whereEqualTo("blogObjectId", blog.getObjectId());
-                    parseQuery.whereEqualTo("userId", ParseUser.getCurrentUser().getObjectId());
-                    System.out.println("Finding bookmark with:\n blogObjectId" + blog.getObjectId()
-                            + "\nuserId:" + ParseUser.getCurrentUser().getObjectId());
-                    blog.setBookmarked(false);
-                    parseQuery.findInBackground(new FindCallback<Bookmark>() {
-                        @Override
-                        public void done(List<Bookmark> list, ParseException e) {
-                            // would definitely get a single object here
-                            if (list!=null & list.size() > 0) {
-                                Bookmark bookmark = list.get(0);
-                                System.out.print("Deleting bookmark, ObjectId:" + bookmark.getObjectId());
-                                bookmark.deleteInBackground();
-                            }
-                        }
-                    });
-                    Toast.makeText(activity, "Bookmark removed !", Toast.LENGTH_SHORT).show();
-                    view.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
-                }else {
-                    Bookmark bookmark = new Bookmark();
-                    System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
-                            + ", \nuserObjectId:" + ParseUser.getCurrentUser().getObjectId());
-                    bookmark.setBlogObjectId(blog.getObjectId());
-                    bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
-                    bookmark.saveInBackground();
-                    view.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
-                    Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+    private class ShareOnClickListener implements View.OnClickListener{
+        private Activity activity;
+        public ShareOnClickListener(Activity activity) {
+            this.activity = activity;
+        }
+        @Override
+        public void onClick(View view) {
+            System.out.println("Clicked share button !");
+            Toast.makeText(activity, "Coming soon", Toast.LENGTH_SHORT);
+        }
     }
+
+    private class BookmarkOnClickListener implements View.OnClickListener {
+
+        private final ImageButton bookmarkButton;
+        private Activity activity;
+
+        public BookmarkOnClickListener(Activity activity, ImageButton bookmarkButton) {
+            this.activity = activity;
+            this.bookmarkButton = bookmarkButton;
+        }
+
+        @Override
+        public void onClick(View view) {
+            boolean animate = false;
+            bookmarkButton.startAnimation(animScale);
+            System.out.println("Blog bookmarked:" + blog.getBookmarked());
+            if (blog.getBookmarked()) {
+                ParseQuery<Bookmark> parseQuery = ParseQuery.getQuery(Bookmark.class);
+                parseQuery.whereEqualTo("blogObjectId", blog.getObjectId());
+                parseQuery.whereEqualTo("userId", ParseUser.getCurrentUser().getObjectId());
+                System.out.println("Finding bookmark with:\n blogObjectId" + blog.getObjectId()
+                        + "\nuserId:" + ParseUser.getCurrentUser().getObjectId());
+                blog.setBookmarked(false);
+                parseQuery.findInBackground(new FindCallback<Bookmark>() {
+                    @Override
+                    public void done(List<Bookmark> list, ParseException e) {
+                        // would definitely get a single object here
+                        if (list != null & list.size() > 0) {
+                            Bookmark bookmark = list.get(0);
+                            System.out.print("Deleting bookmark, ObjectId:" + bookmark.getObjectId());
+                            bookmark.deleteInBackground();
+                        }
+                    }
+                });
+                Toast.makeText(activity, "Bookmark removed !", Toast.LENGTH_SHORT).show();
+                bookmarkButton.setBackgroundResource(0);
+                bookmarkButton.setBackgroundColor(Color.TRANSPARENT);
+//                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
+            }else {
+                Bookmark bookmark = new Bookmark();
+                System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
+                        + ", \nuserObjectId:" + ParseUser.getCurrentUser().getObjectId());
+                bookmark.setBlogObjectId(blog.getObjectId());
+                bookmark.setUserId(ParseUser.getCurrentUser().getObjectId());
+                bookmark.saveInBackground();
+                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
+                blog.setBookmarked(true);
+                Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private class ReadMoreOnClickListener implements View.OnClickListener{
+        private Activity activity;
+        public ReadMoreOnClickListener(Activity activity) {
+            this.activity = activity;
+        }
+        @Override
+        public void onClick(View view) {
+            boolean animate = false;
+            if (view instanceof ImageButton) {
+                animate = true;
+            }
+            if (animate) {
+                view.startAnimation(animScale);
+            }
+            String url = blog.getSource();
+
+                /*added by Saurabh on 18Nov15*/
+            MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+            mp.start();
+            Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(100);
+                /*added by Saurabh on 18Nov15*/
+
+
+            if (url == null || url.equalsIgnoreCase("")) {
+                Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            Dialog dialog = new Dialog(activity, Theme_Black_NoTitleBar_Fullscreen);
+            WebView wv = new WebView(activity);
+            wv.loadUrl(url);
+            wv.setWebViewClient(new WebViewClient(){
+                @Override
+                public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                    view.loadUrl(url);
+                    return true;
+                }
+            });
+            wv.setWebChromeClient(new WebChromeClient(){
+                @Override
+                public void onProgressChanged(WebView view, int newProgress) {
+                    super.onProgressChanged(view, newProgress);
+                    if (newProgress > 0) {
+                        showProgressDialog("Please Wait");
+                    }
+                    if (newProgress >= 90) {
+                        hideProgressDialog();
+                    }
+                }
+            });
+
+            dialog.setContentView(wv);
+            dialog.show();
+        }
+    };
 
     public void showProgressDialog(final String msg) {
 
