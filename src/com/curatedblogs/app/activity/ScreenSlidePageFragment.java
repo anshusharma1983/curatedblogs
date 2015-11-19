@@ -29,9 +29,11 @@ import android.graphics.Color;
 import android.media.Image;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +66,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
+import static android.provider.MediaStore.Images.Media.insertImage;
 
 /**
  * A fragment representing a single step in a wizard. The fragment shows a dummy title indicating
@@ -144,8 +147,8 @@ public class ScreenSlidePageFragment extends Fragment {
         readMoreText = (TextView) rootView.findViewById(R.id.readMoreText);
 
         shareText = (TextView) rootView.findViewById(R.id.shareText);
-        View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity(), rootView);
-        View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity());
+        View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity(), rootView, shareButton);
+        View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity(), readMoreButton);
         View.OnClickListener bookmarkOnClickListener = new BookmarkOnClickListener(getActivity(), bookmarkButton, bookmarkText);
         shareButton.setOnClickListener(shareOnClickListener);
         shareText.setOnClickListener(shareOnClickListener);
@@ -160,33 +163,53 @@ public class ScreenSlidePageFragment extends Fragment {
     private class ShareOnClickListener implements View.OnClickListener{
         private Activity activity;
         View root;
-        public ShareOnClickListener(Activity activity, ViewGroup rootView) {
+        ImageButton shareButton;
+        public ShareOnClickListener(Activity activity, ViewGroup rootView, ImageButton shareButton) {
             this.activity = activity;
             this.root = rootView;
+            this.shareButton = shareButton;
         }
         @Override
         public void onClick(View view) {
-            System.out.println("Clicked share button !");
-            MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
-            mp.start();
-            Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
-            v.vibrate(100);
+            System.out.println("Clicked share button, playing animation !");
+            shareButton.startAnimation(animScale);
+//            new Thread(new Runnable(){
+//                @Override
+//                public void run() {
+//                    shareButton.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//
+//                        }
+//                    });
+//                }
+//            });
+//            shareButton.startAnimation(animScale);
+//            MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+//            mp.start();
+//            Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+//            v.vibrate(100);
+//            new Thread()
             Bitmap bitmap = Bitmap.createBitmap(root.getWidth(), root.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             root.draw(canvas);
-            try {
-                FileOutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + "/growtistShare.png");
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
-                output.close();
-                System.out.println("Written file successfully");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+//            try {
+//                FileOutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + "/growtistShare.png");
+//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+//                output.close();
+//                System.out.println("Written file successfully");
+//            } catch (FileNotFoundException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+
+            String pathofBmp = insertImage(getActivity().getContentResolver(), bitmap, "title", null);
+            Uri bmpUri = Uri.parse(pathofBmp);
             Intent share = new Intent(Intent.ACTION_SEND);
             share.setType("image/jpeg");
-            share.putExtra(Intent.EXTRA_STREAM, Uri.parse(Environment.getExternalStorageDirectory() + "/growtistShare.png"));
+            share.putExtra(Intent.EXTRA_STREAM, bmpUri);
             share.putExtra(Intent.EXTRA_TEXT, "Growtist.com");
             startActivity(Intent.createChooser(share, "Share Image"));
         }
@@ -248,27 +271,32 @@ public class ScreenSlidePageFragment extends Fragment {
 
     private class ReadMoreOnClickListener implements View.OnClickListener{
         private Activity activity;
-        public ReadMoreOnClickListener(Activity activity) {
+        private ImageButton readMoreButton;
+        public ReadMoreOnClickListener(Activity activity, ImageButton readMoreButton) {
             this.activity = activity;
+            this.readMoreButton = readMoreButton;
         }
         @Override
         public void onClick(View view) {
-            boolean animate = false;
-            if (view instanceof ImageButton) {
-                animate = true;
-            }
-            if (animate) {
-                view.startAnimation(animScale);
-            }
+//            boolean animate = false;
+            readMoreButton.startAnimation(animScale);
+//            new Thread(new Runnable(){
+//                @Override
+//                public void run() {
+//                    readMoreButton.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//
+//                        }
+//                    });
+//                }
+//            });
             String url = blog.getSource();
 
-                /*added by Saurabh on 18Nov15*/
             MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
             mp.start();
             Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
             v.vibrate(100);
-                /*added by Saurabh on 18Nov15*/
-
 
             if (url == null || url.equalsIgnoreCase("")) {
                 Toast.makeText(activity, "Sorry no details available.", Toast.LENGTH_SHORT).show();
@@ -331,5 +359,17 @@ public class ScreenSlidePageFragment extends Fragment {
      */
     public int getPageNumber() {
         return mPageNumber;
+    }
+
+    private class WriteImageTask extends AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... objects) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap o) {
+            super.onPostExecute(o);
+        }
     }
 }
