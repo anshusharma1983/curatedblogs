@@ -131,19 +131,22 @@ public class ScreenSlidePageFragment extends Fragment {
             }
         }
         article.setText(Html.fromHtml(Html.fromHtml(blog.getArticle()).toString(), null, new MyTagHandler()));
+        TextView bookmarkText = null;
+        bookmarkText = (TextView) rootView.findViewById(R.id.bookmarkText);
         if (blog.getBookmarked()) {
             bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
+            bookmarkText.setText("Remove");
         }
         ImageButton readMoreButton = null, shareButton = null;
-        TextView readMoreText = null, bookmarkText = null, shareText = null;
+        TextView readMoreText = null,  shareText = null;
         readMoreButton = (ImageButton) rootView.findViewById(R.id.readMoreButton);
         shareButton = (ImageButton) rootView.findViewById(R.id.shareButton);
         readMoreText = (TextView) rootView.findViewById(R.id.readMoreText);
-        bookmarkText = (TextView) rootView.findViewById(R.id.bookmarkText);
+
         shareText = (TextView) rootView.findViewById(R.id.shareText);
         View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity(), rootView);
         View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity());
-        View.OnClickListener bookmarkOnClickListener = new BookmarkOnClickListener(getActivity(), bookmarkButton);
+        View.OnClickListener bookmarkOnClickListener = new BookmarkOnClickListener(getActivity(), bookmarkButton, bookmarkText);
         shareButton.setOnClickListener(shareOnClickListener);
         shareText.setOnClickListener(shareOnClickListener);
         readMoreButton.setOnClickListener(readMoreOnClickListener);
@@ -164,6 +167,10 @@ public class ScreenSlidePageFragment extends Fragment {
         @Override
         public void onClick(View view) {
             System.out.println("Clicked share button !");
+            MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
+            mp.start();
+            Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(100);
             Bitmap bitmap = Bitmap.createBitmap(root.getWidth(), root.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             root.draw(canvas);
@@ -180,7 +187,7 @@ public class ScreenSlidePageFragment extends Fragment {
             Intent share = new Intent(Intent.ACTION_SEND);
             share.setType("image/jpeg");
             share.putExtra(Intent.EXTRA_STREAM, Uri.parse(Environment.getExternalStorageDirectory() + "/growtistShare.png"));
-            share.putExtra(Intent.EXTRA_TEXT, "Read more at growtist");
+            share.putExtra(Intent.EXTRA_TEXT, "Growtist.com");
             startActivity(Intent.createChooser(share, "Share Image"));
         }
     }
@@ -189,10 +196,11 @@ public class ScreenSlidePageFragment extends Fragment {
 
         private final ImageButton bookmarkButton;
         private Activity activity;
-
-        public BookmarkOnClickListener(Activity activity, ImageButton bookmarkButton) {
+        private TextView bookmarkText;
+        public BookmarkOnClickListener(Activity activity, ImageButton bookmarkButton, TextView bookmarkText) {
             this.activity = activity;
             this.bookmarkButton = bookmarkButton;
+            this.bookmarkText = bookmarkText;
         }
 
         @Override
@@ -221,6 +229,7 @@ public class ScreenSlidePageFragment extends Fragment {
                 Toast.makeText(activity, "Bookmark removed !", Toast.LENGTH_SHORT).show();
                 bookmarkButton.setBackgroundResource(0);
                 bookmarkButton.setBackgroundColor(Color.TRANSPARENT);
+                bookmarkText.setText("Select");
 //                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
             }else {
                 Bookmark bookmark = new Bookmark();
@@ -231,6 +240,7 @@ public class ScreenSlidePageFragment extends Fragment {
                 bookmark.saveInBackground();
                 bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
                 blog.setBookmarked(true);
+                bookmarkText.setText("Remove");
                 Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
             }
         }
@@ -279,7 +289,7 @@ public class ScreenSlidePageFragment extends Fragment {
                 public void onProgressChanged(WebView view, int newProgress) {
                     super.onProgressChanged(view, newProgress);
                     if (newProgress > 0) {
-                        showProgressDialog("Please Wait");
+                        showProgressDialog("Loading..");
                     }
                     if (newProgress >= 90) {
                         hideProgressDialog();
