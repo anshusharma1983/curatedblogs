@@ -176,6 +176,7 @@ public class ScreenSlidePageFragment extends Fragment {
             Intent share = new Intent(Intent.ACTION_SEND);
             share.setType("image/jpeg");
             share.putExtra(Intent.EXTRA_STREAM, Uri.parse(Environment.getExternalStorageDirectory() + "/growtistShare.png"));
+            share.putExtra(Intent.EXTRA_TEXT, "Read more at growtist");
             startActivity(Intent.createChooser(share, "Share Image"));
         }
     }
