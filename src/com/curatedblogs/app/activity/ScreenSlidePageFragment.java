@@ -47,6 +47,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -145,7 +146,10 @@ public class ScreenSlidePageFragment extends Fragment {
         readMoreButton = (ImageButton) rootView.findViewById(R.id.readMoreButton);
         shareButton = (ImageButton) rootView.findViewById(R.id.shareButton);
         readMoreText = (TextView) rootView.findViewById(R.id.readMoreText);
-
+        RelativeLayout bookmarkLayout, readmoreLayout, shareLayout;
+        bookmarkLayout = (RelativeLayout) rootView.findViewById(R.id.bookmarkLayout);
+        readmoreLayout = (RelativeLayout) rootView.findViewById(R.id.readmoreLayout);
+        shareLayout = (RelativeLayout) rootView.findViewById(R.id.shareLayout);
         shareText = (TextView) rootView.findViewById(R.id.shareText);
         View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity(), rootView, shareButton);
         View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity(), readMoreButton);
@@ -156,6 +160,9 @@ public class ScreenSlidePageFragment extends Fragment {
         readMoreText.setOnClickListener(readMoreOnClickListener);
         bookmarkButton.setOnClickListener(bookmarkOnClickListener);
         bookmarkText.setOnClickListener(bookmarkOnClickListener);
+        bookmarkLayout.setOnClickListener(bookmarkOnClickListener);
+        readmoreLayout.setOnClickListener(readMoreOnClickListener);
+        shareLayout.setOnClickListener(shareOnClickListener);
         new BitMapTask(blog.getFileURL(), true, imageView).execute(blog.getFileURL());
         return rootView;
     }

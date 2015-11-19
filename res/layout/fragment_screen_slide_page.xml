@@ -183,7 +183,8 @@
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="1"
-            android:layout_gravity="center">
+            android:layout_gravity="center"
+            android:id="@+id/bookmarkLayout">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -222,7 +223,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_weight="1"
-            android:layout_gravity="center">
+            android:layout_gravity="center"
+            android:id="@+id/readmoreLayout">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -262,7 +264,8 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_weight="1"
-            android:layout_gravity="center" >
+            android:layout_gravity="center"
+            android:id="@+id/shareLayout">
 
             <LinearLayout
                 android:layout_width="wrap_content"
