@@ -124,7 +124,11 @@ public class ScreenSlidePageFragment extends Fragment {
         TextView articleSource = (TextView) rootView.findViewById(R.id.articleSource);
         ImageButton bookmarkButton = (ImageButton) rootView.findViewById(R.id.bookmarkButton);
         if (blog.getCategory() != null && !blog.getCategory().equals("")) {
-            articleSource.setText(blog.getCategory());
+            if (blog.getCategory().equals("CuratedBlogs")) {
+                articleSource.setText("Growtist");
+            }else {
+                articleSource.setText(blog.getCategory());
+            }
         }
         article.setText(Html.fromHtml(Html.fromHtml(blog.getArticle()).toString(), null, new MyTagHandler()));
         if (blog.getBookmarked()) {
