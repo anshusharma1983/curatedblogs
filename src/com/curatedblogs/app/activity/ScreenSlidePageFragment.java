@@ -22,10 +22,15 @@ import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.media.Image;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Vibrator;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -53,6 +58,10 @@ import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 import static android.R.style.Theme_Black_NoTitleBar_Fullscreen;
 
@@ -128,7 +137,7 @@ public class ScreenSlidePageFragment extends Fragment {
         readMoreText = (TextView) rootView.findViewById(R.id.readMoreText);
         bookmarkText = (TextView) rootView.findViewById(R.id.bookmarkText);
         shareText = (TextView) rootView.findViewById(R.id.shareText);
-        View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity());
+        View.OnClickListener shareOnClickListener = new ShareOnClickListener(getActivity(), rootView);
         View.OnClickListener readMoreOnClickListener = new ReadMoreOnClickListener(getActivity());
         View.OnClickListener bookmarkOnClickListener = new BookmarkOnClickListener(getActivity(), bookmarkButton);
         shareButton.setOnClickListener(shareOnClickListener);
@@ -143,13 +152,31 @@ public class ScreenSlidePageFragment extends Fragment {
 
     private class ShareOnClickListener implements View.OnClickListener{
         private Activity activity;
-        public ShareOnClickListener(Activity activity) {
+        View root;
+        public ShareOnClickListener(Activity activity, ViewGroup rootView) {
             this.activity = activity;
+            this.root = rootView;
         }
         @Override
         public void onClick(View view) {
             System.out.println("Clicked share button !");
-            Toast.makeText(activity, "Coming soon", Toast.LENGTH_SHORT);
+            Bitmap bitmap = Bitmap.createBitmap(root.getWidth(), root.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            root.draw(canvas);
+            try {
+                FileOutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + "/growtistShare.png");
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+                output.close();
+                System.out.println("Written file successfully");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Intent share = new Intent(Intent.ACTION_SEND);
+            share.setType("image/jpeg");
+            share.putExtra(Intent.EXTRA_STREAM, Uri.parse(Environment.getExternalStorageDirectory() + "/growtistShare.png"));
+            startActivity(Intent.createChooser(share, "Share Image"));
         }
     }
 
