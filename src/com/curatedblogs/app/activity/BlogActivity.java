@@ -2,11 +2,14 @@ package com.curatedblogs.app.activity;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.LruCache;
@@ -22,6 +25,7 @@ import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.BlogVO;
 import com.curatedblogs.app.domain.BlogsWrapper;
 import com.curatedblogs.app.domain.Bookmark;
+import com.curatedblogs.app.domain.Version;
 import com.parse.FindCallback;
 import com.parse.Parse;
 import com.parse.ParseException;
@@ -40,18 +44,42 @@ public class BlogActivity extends BaseActivity {
     List<Blog> blogs;
     Boolean isbookmark = false;
     ImageView loadingImageView;
-
+    Integer appVersion = 1;
 
     @Override
     protected void onStart() {
         super.onStart();
+        checkVersion();
+        System.out.println("Launching screenSlideActivity ");
+    }
+
+    private void checkVersion(){
+        ParseQuery<Version> parseQuery = ParseQuery.getQuery(Version.class);
         try {
-            initializeCache();
-            initializeBlogs(isbookmark);
-            System.out.println("Launching screenSlideActivity ");
-        }catch (ParseException ex){
-            ex.printStackTrace();;
-            System.out.println(ex);
+            Version version = parseQuery.find().get(0);
+            System.out.println("Current version:" + appVersion + ", server version:" + version.getVersion());
+            if (version.getVersion() > appVersion) {
+                new AlertDialog.Builder(activity)
+                        .setTitle("Update application")
+                        .setMessage("This version is not supported, please update the app from the app store")
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pub:Growtist")));
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            }else {
+                initializeCache();
+                initializeBlogs(isbookmark);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
     }
 

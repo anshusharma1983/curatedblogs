@@ -10,6 +10,7 @@ import com.curatedblogs.app.R;
 import com.curatedblogs.app.activity.PreferenceActivity;
 import com.curatedblogs.app.domain.Blog;
 import com.curatedblogs.app.domain.Bookmark;
+import com.curatedblogs.app.domain.Version;
 import com.facebook.AccessToken;
 import com.parse.Parse;
 import com.parse.ParseACL;
@@ -80,6 +81,7 @@ public class BlogApplication extends Application {
     private void registerSubClasses() {
         ParseObject.registerSubclass(Blog.class);
         ParseObject.registerSubclass(Bookmark.class);
+        ParseObject.registerSubclass(Version.class);
     }
 
     public String getCurrentPackageName() {
