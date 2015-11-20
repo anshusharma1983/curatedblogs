@@ -55,32 +55,39 @@ public class BlogActivity extends BaseActivity {
 
     private void checkVersion(){
         ParseQuery<Version> parseQuery = ParseQuery.getQuery(Version.class);
-        try {
-            Version version = parseQuery.find().get(0);
-            System.out.println("Current version:" + appVersion + ", server version:" + version.getVersion());
-            if (version.getVersion() > appVersion) {
-                new AlertDialog.Builder(activity)
-                        .setTitle("Update application")
-                        .setMessage("This version is not supported, please update the app from the app store")
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pub:Growtist")));
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
-            }else {
-                initializeCache();
-                initializeBlogs(isbookmark);
+        //            Version version = parseQuery.find().get(0);
+        parseQuery.findInBackground(new FindCallback<Version>() {
+            @Override
+            public void done(List<Version> list, ParseException e) {
+                Version version = list.get(0);
+                System.out.println("Current version:" + appVersion + ", server version:" + version.getVersion());
+                if (version.getVersion() > appVersion) {
+                    new AlertDialog.Builder(activity)
+                            .setTitle("Update application")
+                            .setMessage("This version is not supported, please update the app from the app store")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pub:Growtist")));
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finish();
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                } else {
+                    initializeCache();
+                    try {
+                        initializeBlogs(isbookmark);
+                    } catch (ParseException e1) {
+                        e1.printStackTrace();
+                    }
+                }
             }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        });
+
     }
 
 //    @Override
