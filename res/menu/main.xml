@@ -3,6 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.navigation.drawer.activity.MainActivity" >
 
+
+    <item
+        android:id="@+id/badge"
+        android:actionLayout="@layout/feed_update_count"
+        android:icon="@drawable/shape_notification"
+        android:showAsAction="always"
+        android:title="">
+    </item>
+
+
+
     <item android:id="@+id/bookmarks"
         android:title="My Bookmarks">
     </item>
@@ -15,4 +26,7 @@
         android:id="@+id/action_settings"
         android:title="@string/action_settings" />
 
+
+
 </menu>
+

@@ -7,7 +7,7 @@
 
     <style name="AppTheme" parent="AppBaseTheme">
         <item name="android:windowContentOverlay">@null</item>
-        <item name="android:logo">@android:color/transparent</item>
+
     </style>
 
     <style name="MyActionButtonOverflow" parent="android:style/Widget.Holo.ActionButton.Overflow">
@@ -18,4 +18,6 @@
 
 
 </resources>
+
+
 

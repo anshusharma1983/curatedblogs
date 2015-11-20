@@ -180,44 +180,15 @@ public class ScreenSlidePageFragment extends Fragment {
         public void onClick(View view) {
             System.out.println("Clicked share button, playing animation !");
             shareButton.startAnimation(animScale);
-//            new Thread(new Runnable(){
-//                @Override
-//                public void run() {
-//                    shareButton.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//
-//                        }
-//                    });
-//                }
-//            });
-//            shareButton.startAnimation(animScale);
-//            MediaPlayer mp = MediaPlayer.create(activity, R.raw.voicebegin);
-//            mp.start();
-//            Vibrator v = (Vibrator) activity.getSystemService(Context.VIBRATOR_SERVICE);
-//            v.vibrate(100);
-//            new Thread()
             Bitmap bitmap = Bitmap.createBitmap(root.getWidth(), root.getHeight(), Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(bitmap);
             root.draw(canvas);
-
-//            try {
-//                FileOutputStream output = new FileOutputStream(Environment.getExternalStorageDirectory() + "/growtistShare.png");
-//                bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
-//                output.close();
-//                System.out.println("Written file successfully");
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-
             String pathofBmp = insertImage(getActivity().getContentResolver(), bitmap, "title", null);
             Uri bmpUri = Uri.parse(pathofBmp);
             Intent share = new Intent(Intent.ACTION_SEND);
             share.setType("image/jpeg");
             share.putExtra(Intent.EXTRA_STREAM, bmpUri);
-            share.putExtra(Intent.EXTRA_TEXT, "read more at " + blog.getSource());
+            share.putExtra(Intent.EXTRA_TEXT, blog.getSource() + " [Powered by Growtist]");
             startActivity(Intent.createChooser(share, "Share Image"));
         }
     }
@@ -237,6 +208,7 @@ public class ScreenSlidePageFragment extends Fragment {
         public void onClick(View view) {
             boolean animate = false;
             bookmarkButton.startAnimation(animScale);
+            ScreenSlideActivity.notifCount.startAnimation(animScale);
             System.out.println("Blog bookmarked:" + blog.getBookmarked());
             if (blog.getBookmarked()) {
                 ParseQuery<Bookmark> parseQuery = ParseQuery.getQuery(Bookmark.class);
@@ -257,10 +229,10 @@ public class ScreenSlidePageFragment extends Fragment {
                     }
                 });
                 Toast.makeText(activity, "Bookmark removed !", Toast.LENGTH_SHORT).show();
+                ScreenSlideActivity.updateCount(ScreenSlideActivity.bCount - 1);
                 bookmarkButton.setBackgroundResource(0);
                 bookmarkButton.setBackgroundColor(Color.TRANSPARENT);
                 bookmarkText.setText("Select");
-//                bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_border_black_18dp);
             }else {
                 Bookmark bookmark = new Bookmark();
                 System.out.println("Saving bookmark, \nblogObjectId:" + blog.getObjectId()
@@ -271,6 +243,7 @@ public class ScreenSlidePageFragment extends Fragment {
                 bookmarkButton.setBackgroundResource(R.drawable.ic_bookmark_black_18dp);
                 blog.setBookmarked(true);
                 bookmarkText.setText("Remove");
+                ScreenSlideActivity.updateCount(ScreenSlideActivity.bCount + 1);
                 Toast.makeText(activity, "Article bookmarked !", Toast.LENGTH_SHORT).show();
             }
         }

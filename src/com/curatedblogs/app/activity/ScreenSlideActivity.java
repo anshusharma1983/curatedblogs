@@ -87,9 +87,14 @@ public class ScreenSlideActivity extends FragmentActivity {
     List<BlogVO> blogs;
     BlogsWrapper blogsWrapper;
     private Activity activity;
+
 //    Button readMoreButton;
 //    Button bookmarkButton;
     private int currrentItem;
+    public static Button notifCount;
+    public static int bCount = 0;
+    private boolean bCountInitialized = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,11 +120,7 @@ public class ScreenSlideActivity extends FragmentActivity {
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
-                // When changing pages, reset the action bar actions since they are dependent
-                // on which page is currently active. An alternative approach is to have each
-                // fragment expose actions itself (rather than the activity exposing actions),
-                // but for simplicity, the activity provides the actions in this sample.
-                invalidateOptionsMenu();
+           invalidateOptionsMenu();
             }
         });
     }
@@ -128,7 +129,27 @@ public class ScreenSlideActivity extends FragmentActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main, menu);
+        View count = menu.findItem(R.id.badge).getActionView();
+        notifCount = (Button) count.findViewById(R.id.notif_count);
+        if (!bCountInitialized) {
+            countBookMarks();
+        }
+        updateCount(bCount);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    public static void updateCount(int count) {
+        bCount = count;
+        notifCount.setText(bCount + "");
+    }
+
+    private void countBookMarks() {
+        bCount = 0;
+        for (BlogVO blog : blogs) {
+            if (blog.getBookmarked()){
+                bCount++;
+            }
+        }
     }
 
     @Override

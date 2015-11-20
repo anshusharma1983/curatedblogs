@@ -54,26 +54,26 @@
             android:adjustViewBounds="true"
             android:layout_gravity="center_horizontal"
             android:src="@drawable/blog"
-            android:scaleType="fitXY" />
+            android:scaleType="centerCrop" />
 
-       <!-- <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="#Product management"
-            android:background="@drawable/customborder2"
-            android:textColor="@color/card_white"
-            android:textSize="10dp"
-            android:layout_margin="1dp"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="4dp"
-            android:paddingTop="1dp"
-            android:paddingBottom="1dp"
-            android:paddingRight="4dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignRight="@+id/image"
-            android:layout_alignBottom="@+id/image" />-->
+        <!-- <TextView
+             android:id="@+id/textView2"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:text="#Product management"
+             android:background="@drawable/customborder2"
+             android:textColor="@color/card_white"
+             android:textSize="10dp"
+             android:layout_margin="1dp"
+             android:layout_gravity="center_vertical"
+             android:paddingLeft="4dp"
+             android:paddingTop="1dp"
+             android:paddingBottom="1dp"
+             android:paddingRight="4dp"
+             android:layout_alignParentBottom="true"
+             android:layout_alignParentRight="true"
+             android:layout_alignRight="@+id/image"
+             android:layout_alignBottom="@+id/image" />-->
     </RelativeLayout>
 
     <LinearLayout

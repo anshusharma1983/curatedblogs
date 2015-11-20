@@ -64,7 +64,7 @@ public class BlogActivity extends BaseActivity {
                 if (version.getVersion() > appVersion) {
                     new AlertDialog.Builder(activity)
                             .setTitle("Update application")
-                            .setMessage("This version is not supported, please update the app from the app store")
+                            .setMessage("This version is not supported, please update the app from the play store")
                             .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
                                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://search?q=pub:Growtist")));
