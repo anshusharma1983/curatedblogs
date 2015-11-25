@@ -181,6 +181,7 @@ public class BlogActivity extends BaseActivity {
     private void updateBookmarks(List<Blog> blogs, List<Bookmark> list, Boolean setAllBookmarked) {
         List<String> bookmarks = new ArrayList<String>();
         if (!setAllBookmarked) {
+            System.out.print("Bookmarks found:" + list.size());
             for (Bookmark bookmark : list) {
                 bookmarks.add(bookmark.getBlogObjectId());
             }
